@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-
+from NN import NerualNetwork
 # Общий датафрейм с тренировочными данными
 df = pd.read_csv(os.getcwd() + r'\data\train2022.csv')
 
@@ -30,4 +30,6 @@ X_matrix = x_steps_1[0]
 
 # Матрица выходных данных
 Y_matrix = y_steps_1[0]
+
+NN = NerualNetwork(X_matrix, Y_matrix)
 
