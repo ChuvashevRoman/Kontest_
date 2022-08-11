@@ -30,23 +30,48 @@ class NerualNetwork:
 
     def mse_loss(self, y_true, y_pred):
       # y_true и y_pred - массивы numpy одинаковой длины
-      return float(((y_true - y_pred) ** 2).mean())
+      return ((y_true - y_pred) ** 2).mean()
 
-    def feedforward(self):
+    def feedforward(self, w, b):
         X_conv_1 = convolve2d(self.X_matrix, np.ones((3, 3)), mode='same', boundary='wrap')
         X_conv_2 = convolve2d(self.X_matrix, np.ones((5, 5)), mode='same', boundary='wrap')
-        h1 = self.sigmoid(self.X_matrix * self.w[0] + X_conv_1 * self.w[1] + X_conv_2 * self.w[2] + self.b[0])
-        h2 = self.sigmoid(self.X_matrix * self.w[3] + X_conv_1 * self.w[4] + X_conv_2 * self.w[5] + self.b[1])
-        h3 = self.sigmoid(self.X_matrix * self.w[6] + X_conv_1 * self.w[7] + X_conv_2 * self.w[8] + self.b[2])
-        o1 = self.sigmoid(h1 * self.w[9] + h2 * self.w[10] + h3 * self.w[11] + self.b[3])
+        h1 = self.sigmoid(self.X_matrix * w[0] + X_conv_1 * w[1] + X_conv_2 * w[2] + b[0])
+        h2 = self.sigmoid(self.X_matrix * w[3] + X_conv_1 * w[4] + X_conv_2 * w[5] + b[1])
+        h3 = self.sigmoid(self.X_matrix * w[6] + X_conv_1 * w[7] + X_conv_2 * w[8] + b[2])
+        o1 = self.sigmoid(h1 * w[9] + h2 * w[10] + h3 * w[11] + b[3])
         return o1
 
-    def func(self, X):
-        return self.mse_loss(self.feedforward(), self.Y_matrix)
+    def func(self, w, b):
+        return self.mse_loss(self.feedforward(w, b), self.Y_matrix)
 
-    def lern_NN(self):
-        print(self.w + self.b)
-        self.func(5)
-        opt = minimize(self.func, self.w + self.b, method="Nelder-Mead")
-        self.func(5)
-        return minimize(self.func, self.w + self.b, method="Nelder-Mead")
+    def gradient(self, f, w, b):
+        h = 1e-4 #h - разница независимой переменной при выводе, ее можно задать как очень маленькую константу
+        grad_w = np.zeros_like(w) #
+        for i in range(w.size):
+            tmp_val = w[i]
+            w[i] = tmp_val + h
+            fxh1 = f(w, b) # Вычислить f (x + h)
+            w[i] = tmp_val - h
+            fxh2 = f(w, b) # Вычислить f (x-h)
+            grad_w[i] = (fxh1 - fxh2)/(2*h)
+            w[i] = tmp_val #reduction
+        grad_b = np.zeros_like(b) #
+        for i in range(b.size):
+            tmp_val = b[i]
+            b[i] = tmp_val + h
+            fxh1 = f(w, b) # Вычислить f (x + h)
+            b[i] = tmp_val - h
+            fxh2 = f(w, b) # Вычислить f (x-h)
+            grad_b[i] = (fxh1 - fxh2)/(2*h)
+            b[i] = tmp_val #reduction
+        return grad_w, grad_b
+
+    def lern_NN(self, lr = 0.01, step_num=10000):
+        w_array = np.array([np.random.normal() for i in range(12)])
+        b_array = np.array([np.random.normal() for i in range(4)])
+        for i in range(step_num):
+            grad_w, grad_b = self.gradient(self.func, w_array, b_array)
+            w_array -= lr * grad_w
+            b_array -= lr * grad_b
+            print(i)
+        return w_array, b_array
