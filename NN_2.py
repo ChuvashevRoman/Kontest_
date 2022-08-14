@@ -3,7 +3,7 @@ import scipy
 from scipy.signal import convolve2d
 from scipy.optimize import minimize
 
-class NerualNetwork:
+class NerualNetwork_2:
     def __init__(self, X_matrix, Y_matrix):
         # Веса
         self.w = [np.random.normal() for i in range(12)]
